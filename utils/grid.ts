@@ -30,60 +30,77 @@ export function generateNextBalls(ballColors: Ball[]): Ball[] {
 }
 
 export function checkMatches(grid: Grid): {
-    newGrid: Grid;
-    gainedPoints: number;
-    powerup: boolean;
-  } {
-    const directions = [
-      [1, 0],
-      [0, 1],
-      [1, 1],
-      [1, -1],
-    ];
-    const toClear: Set<string> = new Set();
-    let gainedPoints = 0;
-    let powerup = false;
+  newGrid: Grid;
+  gainedPoints: number;
+  powerup: boolean;
+} {
+  const directions = [
+    [1, 0], // vertical
+    [0, 1], // horizontal
+    [1, 1], // diagonal right-down
+    [1, -1], // diagonal left-down
+  ];
 
-    for (let r = 0; r < GRID_SIZE; r++) {
-      for (let c = 0; c < GRID_SIZE; c++) {
-        const current = grid[r][c];
-        if (!current) continue;
+  const toClear: Set<string> = new Set();
+  const matches: Position[][] = [];
 
-        for (const [dr, dc] of directions) {
-          const match: Position[] = [[r, c]];
-          let nr = r + dr,
-            nc = c + dc;
+  for (let r = 0; r < GRID_SIZE; r++) {
+    for (let c = 0; c < GRID_SIZE; c++) {
+      const current = grid[r][c];
+      if (!current) continue;
 
-          while (
-            nr >= 0 &&
-            nr < GRID_SIZE &&
-            nc >= 0 &&
-            nc < GRID_SIZE &&
-            grid[nr][nc]?.color === current.color
-          ) {
-            match.push([nr, nc]);
-            nr += dr;
-            nc += dc;
-          }
+      for (const [dr, dc] of directions) {
+        const match: Position[] = [[r, c]];
+        let nr = r + dr,
+          nc = c + dc;
 
-          if (match.length >= 4) {
+        while (
+          nr >= 0 &&
+          nr < GRID_SIZE &&
+          nc >= 0 &&
+          nc < GRID_SIZE &&
+          grid[nr][nc]?.color === current.color
+        ) {
+          match.push([nr, nc]);
+          nr += dr;
+          nc += dc;
+        }
+
+        // Only add match if it's long enough and hasn't been counted already
+        if (match.length >= 4) {
+          const keySet = new Set(match.map(([mr, mc]) => `${mr},${mc}`));
+          const isNewMatch = [...keySet].some((k) => !toClear.has(k));
+          if (isNewMatch) {
             match.forEach(([mr, mc]) => toClear.add(`${mr},${mc}`));
-            if (match.length >= 6) {
-              gainedPoints += 50;
-              powerup = true;
-            } else if (match.length === 5) {
-              gainedPoints += 30;
-            } else {
-              gainedPoints += 10;
-            }
+            matches.push(match);
           }
         }
       }
     }
-
-    const newGrid = grid.map((row, rIdx) =>
-      row.map((cell, cIdx) => (toClear.has(`${rIdx},${cIdx}`) ? null : cell))
-    );
-
-    return { newGrid, gainedPoints, powerup };
   }
+
+  // Scoring
+  let gainedPoints = 0;
+  let powerup = false;
+
+  for (const match of matches) {
+    const length = match.length;
+    if (length >= 7) {
+      gainedPoints += 120;
+      powerup = true;
+    } else if (length === 6) {
+      gainedPoints += 60;
+      powerup = true;
+    } else if (length === 5) {
+      gainedPoints += 30;
+    } else {
+      gainedPoints += 10;
+    }
+  }
+
+  const newGrid = grid.map((row, rIdx) =>
+    row.map((cell, cIdx) => (toClear.has(`${rIdx},${cIdx}`) ? null : cell))
+  );
+
+  return { newGrid, gainedPoints, powerup };
+}

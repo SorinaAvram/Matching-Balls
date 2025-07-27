@@ -4,8 +4,10 @@ import {
   View,
   TouchableOpacity,
   Text,
+  ScrollView,
   Image,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import allowedMoveImage from "../assets/images/allowed_move.png";
 import invalidMoveImage from "../assets/images/invalid_move.png";
@@ -71,16 +73,24 @@ export const TutorialOverlay = ({
   visible,
   handleCloseTutorial,
 }: TutorialOverlayProps) =>
-
   visible ? (
-    <View style={styles.tutorialOverlay}>
-      <View style={styles.tutorialContent}>
+    <SafeAreaView style={styles.tutorialOverlay}>
+      {/* Close button at top right */}
+      <TouchableOpacity
+        style={styles.closeButton}
+        onPress={handleCloseTutorial}
+        accessibilityLabel="Close tutorial"
+      >
+        <Text style={styles.closeButtonText}>×</Text>
+      </TouchableOpacity>
+
+      <ScrollView contentContainerStyle={styles.tutorialContent}>
         <Text style={styles.tutorialTitle}>Allowed Moves</Text>
         <Text style={styles.tutorialText}>
           Match at least 4 balls of the same color either vertically,
           horizontally or on diagonal, to clear them from the board
         </Text>
-        
+
         <View style={styles.tutorialImageContainer}>
           <Image source={allowedMoveImage} style={styles.tutorialImage} />
         </View>
@@ -96,20 +106,16 @@ export const TutorialOverlay = ({
         <Text style={styles.tutorialTitle}>Scoring</Text>
         <Text style={styles.tutorialText}>
           Points are awarded for each successful match: 10 points for a match of
-          4 balls, 30 for a match of 5 and 50 for a match of 6. You will also
-          get a surprise reward when matching 6 balls.
+          4 balls, 30 for a match of 5, 60 for a match of 6 and 120 for the very rare 7 balls match. You will also
+          get a surprise reward when matching 6 or 7 balls.
         </Text>
 
         <Text style={styles.tutorialTitle}>Game Over</Text>
         <Text style={styles.tutorialText}>
           When you run out of moves, the game is over.
         </Text>
-      </View>
-
-      <TouchableOpacity onPress={handleCloseTutorial}>
-        <Text style={{ fontSize: 32, color: "white" }}>▼</Text>
-      </TouchableOpacity>
-    </View>
+      </ScrollView>
+    </SafeAreaView>
   ) : null;
 
 const styles = StyleSheet.create({
@@ -180,24 +186,20 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     fontSize: 16,
   },
-  tutorialOverlay: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: "#FFE5B4",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingVertical: 20,
-    paddingHorizontal: 20,
-    zIndex: 1000,
-  },
-  tutorialContent: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
+ tutorialOverlay: {
+  position: "absolute",
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  backgroundColor: "#FFE5B4",
+  paddingVertical: 20,
+  paddingHorizontal: 20,
+  zIndex: 1000,
+},
+tutorialContent: {
+  paddingBottom: 20,
+},
   tutorialTitle: {
     fontSize: 20,
     fontWeight: "bold",
@@ -223,4 +225,17 @@ const styles = StyleSheet.create({
     marginVertical: 4,
     resizeMode: "contain",
   },
+closeButton: {
+  position: "absolute",
+  top: 35,    
+  right: 25,
+  zIndex: 1100,
+  padding: 10,
+},
+
+closeButtonText: {
+  fontSize: 28,
+  fontWeight: "bold",
+  color: "#333",
+},
 });

@@ -28,7 +28,7 @@ export async function playBackgroundMusic(filePath: any, isMuted: boolean = fals
     }
     const { sound } = await Audio.Sound.createAsync(filePath, {
       isLooping: true,
-      volume: isMuted ? 0 : 0.2,
+      volume: isMuted ? 0 : 0.3,
     });
     backgroundSound = sound;
     await sound.playAsync();
